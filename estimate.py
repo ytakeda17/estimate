@@ -33,10 +33,14 @@ if __name__=="__main__":
                if len([x for x in possibilities if x > 0.1])== 4:
                   rdis = ((rye[0]-rar[0])**2 + (rye[1]-rar[1])**2)**0.5
                   ldis = ((lye[0]-lar[0])**2 + (lye[1]-lar[1])**2)**0.5
-                  #print([rdis,ldis])
+                  
                   rates.append(np.min([rdis/ldis,ldis/rdis]))
                else:
-                  rates.append(1)
-         ave_rate = gmean(rates)
+                  rates.append(0)
+         if len(rates)>1:
+            #ave_rate = gmean(rates)
+            ave_rate = np.mean(rates)
+         else:
+            ave_rate = 1
       score += 1-ave_rate
       print([score, json_path])
