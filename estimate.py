@@ -15,12 +15,11 @@ def top_width_score_mean(ary):
    selected = []
    top_w = sorted_ary[0][1]
    threshold = top_w/3
-
+   
    for v,w,h in sorted_ary:
       if (top_w - w) < threshold:
          selected.append(v*min([max([h*1.25,w*2]), 1]))
-         top_w = w
-         
+         top_w = w      
       else:
          break
    return np.mean(selected)
