@@ -10,14 +10,17 @@ def get_jsons(pics_dir, jsons_dir):
 def cosine(u,v):
    return (abs(np.dot(u,v))/(np.linalg.norm(u)*np.linalg.norm(v)))
 
-def top_height_score_mean(ary,threshold=0.2):
+def top_width_score_mean(ary):
    sorted_ary = sorted(ary,reverse=True,key=lambda x:x[1])
    selected = []
-   top = sorted_ary[0][1]
-   for v,h in sorted_ary:
-      if (top - h) < threshold:
-         selected.append(v*min([h*1.25, 1]))
-         top = h
+   top_w = sorted_ary[0][1]
+   threshold = top_w/3
+   #print(ary)
+   for v,w,h in sorted_ary:
+      if (top_w - w) < threshold:
+         selected.append(v*min([max([h*1.25,w*2]), 1]))
+         top_w = w
+         #print([v,w,h])
       else:
          break
    return np.mean(selected)
@@ -43,7 +46,9 @@ if __name__=="__main__":
             score = 0
             pose = np.array(person['pose_keypoints'])
             ys = np.array([x for x in pose[list(range(1,54,3))] if x >0.001])
+            xs = np.array([x for x in pose[list(range(0,54,3))] if x >0.001])
             height = max(ys) - min(ys)
+            width = max(xs) -min(xs)
             nos = pose[0*3:1*3]
             rye = pose[14*3:15*3]
             lye = pose[15*3:16*3]
@@ -64,12 +69,13 @@ if __name__=="__main__":
                score *= (1-np.min([rdis/ldis,ldis/rdis]))
             else:
                score = 1
-            scores.append((score,height))
+            scores.append((score,width,height))
          if len(scores)>0:
-            all_score = top_height_score_mean(scores)
+            all_score = top_width_score_mean(scores)
          else:
             all_score = 0
-            
+      
       res[json_path.split("/")[-1]]=all_score
+      #print(scores)
       print([json_path.split("/")[-1],round(all_score*80+20*valid)])
 
