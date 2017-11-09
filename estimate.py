@@ -3,9 +3,10 @@ import os,sys
 import numpy as np
 import glob
 from scipy.stats import gmean
+import subprocess
 
 def get_jsons(pics_dir, jsons_dir):
-   pass
+   subprocess.call(["./openpose.bin", "--image_dir", pics_dir, "--write_keypoint_json", jsons_dir, "--no_display", "--num_gpu",  "1", "--keypoint_scale", "3", "--model_folder", "./models/"])
 
 def cosine(u,v):
    return (abs(np.dot(u,v))/(np.linalg.norm(u)*np.linalg.norm(v)))
@@ -25,11 +26,12 @@ def top_width_score_mean(ary):
    return np.mean(selected)
 
 
-if __name__=="__main__":
-   argv = sys.argv
-   pics_path = argv[1]
-   jsons_path = argv[2].rstrip("/")
-   get_jsons(pics_path, jsons_path)
+def estimate(images_path):
+   #argv = sys.argv
+   #pics_path = argv[1]
+   #jsons_path = argv[2].rstrip("/")
+   jsons_path = "tmp/out"
+   get_jsons(images_path, jsons_path)
    jsons_path_format = jsons_path+"/*.json"
 
    res = {}
@@ -74,7 +76,11 @@ if __name__=="__main__":
          else:
             all_score = 0
       
-      res[json_path.split("/")[-1]]=all_score
+      res[json_path.split("/")[-1].split("_")[-2]]=round(all_score*80+20*valid)
       #print(scores)
-      print([json_path.split("/")[-1],round(all_score*80+20*valid)])
-
+      #print([json_path.split("/")[-1],round(all_score*80+20*valid)])
+   for path in os.listdir(jsons_path):
+      os.remove(jsons_path+"/"+path)
+   print(res)
+   return res
+   
