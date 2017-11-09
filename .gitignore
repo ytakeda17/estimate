@@ -1,1 +1,4 @@
 models/
+image/*
+hires_image/*
+openpose.bin
