@@ -1,5 +1,5 @@
 import json
-import os,sys
+import os,sys,re
 import numpy as np
 import glob
 from scipy.stats import gmean
@@ -75,8 +75,8 @@ def estimate(images_path):
             all_score = top_width_score_mean(scores)
          else:
             all_score = 0
-      
-      res[json_path.split("/")[-1].split("_")[-2]]=round(all_score*80+20*valid)
+      file_ID = re.sub( r'_keypoints.json', "", json_path.split("/")[-1])
+      res[file_ID]=round(all_score*80+20*valid)
       #print(scores)
       #print([json_path.split("/")[-1],round(all_score*80+20*valid)])
    for path in os.listdir(jsons_path):
