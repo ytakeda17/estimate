@@ -11,6 +11,9 @@ def get_jsons(pics_dir, jsons_dir):
 def cosine(u,v):
    return (abs(np.dot(u,v))/(np.linalg.norm(u)*np.linalg.norm(v)))
 
+def sine(u,v):
+   return (1-cosine(u,v)**2)**(0.5)
+
 def top_width_score_mean(ary):
    sorted_ary = sorted(ary,reverse=True,key=lambda x:x[1])
    selected = []
@@ -25,6 +28,12 @@ def top_width_score_mean(ary):
          break
    return np.mean(selected)
 
+## 体積でスコアとるやつを選別
+
+## max(possibility)<0.5は0
+## 両目両耳→長さではなくmincos(目と耳, 目と鼻),cos(目と耳, 目と鼻))
+## 両目片耳→ f max(目と鼻と鼻と首の線の角度)＞閾値: 数値; else: 1;
+## 片目　→ 1
 
 def estimate(images_path):
    #argv = sys.argv
@@ -51,23 +60,38 @@ def estimate(images_path):
             height = max(ys) - min(ys)
             width = max(xs) -min(xs)
             nos = pose[0*3:1*3]
+            nec = pose[1*3:2*3]
             rye = pose[14*3:15*3]
             lye = pose[15*3:16*3]
             rar = pose[16*3:17*3]
             lar = pose[17*3:18*3]
 
-            lye_line = nos[:2]-lye[:2]
-            rye_line = nos[:2]-rye[:2]
-            lar_line = lye[:2]-lar[:2]
-            rar_line = rye[:2]-rar[:2]
+            lye_line = lye[:2]-nos[:2]
+            rye_line = rye[:2]-nos[:2]
+            lar_line = lar[:2]-lye[:2]
+            rar_line = rar[:2]-rye[:2]
+            nos_line = nos[:2]-nec[:2]
+
+            
             
             possibilities = [x[2] for x in  [rye,lye,rar,lar]]
+            eye_pos = [x[2] for x in  [rye,lye]]
+            ear_pos = [x[2] for x in  [rar,lar]]
+            #print(possibilities)
+            if min(eye_pos) > 0.01:
+               #rdis = ((rye[0]-rar[0])**2 + (rye[1]-rar[1])**2)**0.5
+               #ldis = ((lye[0]-lar[0])**2 + (lye[1]-lar[1])**2)**0.5
+               
+               rdis = ((rye[0]-nos[0])**2 + (rye[1]-nos[1])**2)**0.5
+               ldis = ((lye[0]-nos[0])**2 + (lye[1]-nos[1])**2)**0.5
+               
+               #score = np.mean([cosine(lye_line,lar_line),cosine(rye_line,rar_line)])
 
-            if min(possibilities) > 0.01:
-               rdis = ((rye[0]-rar[0])**2 + (rye[1]-rar[1])**2)**0.5
-               ldis = ((lye[0]-lar[0])**2 + (lye[1]-lar[1])**2)**0.5
-               score = np.mean([cosine(lye_line,lar_line),cosine(rye_line,rar_line)])
-               score *= (1-np.min([rdis/ldis,ldis/rdis]))
+               #score = min([sine(lye_line,nos_line),sine(rye_line,nos_line)])
+               #print([rdis,ldis])
+               score = (1-np.min([rdis/ldis,ldis/rdis]))
+               if min(ear_pos) > 0.01:
+                  score *= np.mean([cosine(lye_line,lar_line),cosine(rye_line,rar_line)])
             else:
                score = 1
             scores.append((score,width,height))
@@ -81,6 +105,6 @@ def estimate(images_path):
       #print([json_path.split("/")[-1],round(all_score*80+20*valid)])
    for path in os.listdir(jsons_path):
       os.remove(jsons_path+"/"+path)
-   print(res)
+   #print(res)
    return res
    
