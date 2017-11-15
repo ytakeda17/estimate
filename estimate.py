@@ -14,6 +14,8 @@ def cosine(u,v):
 def sine(u,v):
    return (1-cosine(u,v)**2)**(0.5)
 
+def dist(u,v):
+   return ((u[0]-v[0])**2 + (u[1]-v[1])**2)**0.5
 def top_width_score_mean(ary):
    sorted_ary = sorted(ary,reverse=True,key=lambda x:x[1])
    selected = []
@@ -36,7 +38,7 @@ def top_size_score_mean(ary):
    
    for v,w,h in sorted_ary:
       if  w * h > threshold:
-         selected.append(v*min([2*w*h, 1]))
+         selected.append(v*min([3*w*h, 1]))
       else:
          break
    return np.mean(selected)
@@ -73,11 +75,12 @@ def jsons2result(json_paths):
             score = pose2score(pose)
             scores.append(score)
          if len(scores)>0:
-            all_score = top_size_score_mean(scores)
+            all_score = top_width_score_mean(scores)
          else:
             all_score = 0
       file_ID = re.sub( r'_keypoints.json', "", json_path.split("/")[-1])
       res[file_ID]=round(all_score*80+20*valid)
+      print([file_ID,scores])
    return res
    
 
@@ -108,16 +111,19 @@ def pose2score(pose):
    score = 0
    if max(probs)>0.5:
       if min(eye_probs) > 0.01:
-         #rdis = ((rye[0]-nos[0])**2 + (rye[1]-nos[1])**2)**0.5
-         #ldis = ((lye[0]-nos[0])**2 + (lye[1]-nos[1])**2)**0.5
-      
-         #score = (1-np.min([rdis/ldis,ldis/rdis]))
          if min(ear_probs) > 0.01:
-            score = max([cosine(lye_line,lar_line),cosine(rye_line,rar_line)])
-         else:            
-            score = 1
+            eye_nos_dis = dist((rye+lye)/2,nos)
+            ear_nos_dis = dist((rar+lar)/2,nos)
+            naturality = ear_nos_dis / eye_nos_dis
+            score = 1 if naturality > 1 else 0.2
+         else:
+            if ear_probs[0]>ear_probs[1]:
+               naturality = sine(lye_line,nos_line)
+            else:
+               naturality = sine(rye_line,nos_line)
+            score = naturality if naturality < 0.3 else 1 
       else:
-         pass
+         score = 1
    else:
       score = 0
    return (score,width,height)
