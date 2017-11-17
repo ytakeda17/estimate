@@ -20,7 +20,7 @@ class PostDebugHandler(tornado.web.RequestHandler):
             img = Image.open(io.BytesIO(data))
             img_path = img_dir+fn
             img.save(img_path)
-        res = estimate.estimate(img_dir)
+        res = estimate.images2result(img_dir)
 
         for path in os.listdir(img_dir):
             os.remove(img_dir+path)

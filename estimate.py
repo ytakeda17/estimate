@@ -6,7 +6,7 @@ from scipy.stats import gmean
 import subprocess
 
 def get_jsons(pics_dir, jsons_dir):
-   subprocess.call(["./openpose.bin", "--image_dir", pics_dir, "--write_keypoint_json", jsons_dir, "--no_display", "--num_gpu",  "1", "--keypoint_scale", "3", "--model_folder", "./models/"])
+   subprocess.call(["./openpose.bin", "--image_dir", pics_dir, "--write_keypoint_json", jsons_dir, "--no_display", "--num_gpu",  "1", "--keypoint_scale", "1", "--model_folder", "./models/"])
 
 def cosine(u,v):
    return (abs(np.dot(u,v))/(np.linalg.norm(u)*np.linalg.norm(v)))
@@ -38,7 +38,7 @@ def top_size_score_mean(ary):
    
    for v,w,h in sorted_ary:
       if  w * h > threshold:
-         selected.append(v*min([3*w*h, 1]))
+         selected.append(v*(w*h)/top_size)
       else:
          break
    return np.mean(selected)
@@ -75,12 +75,12 @@ def jsons2result(json_paths):
             score = pose2score(pose)
             scores.append(score)
          if len(scores)>0:
-            all_score = top_width_score_mean(scores)
+            all_score = top_size_score_mean(scores)
          else:
             all_score = 0
       file_ID = re.sub( r'_keypoints.json', "", json_path.split("/")[-1])
       res[file_ID]=round(all_score*80+20*valid)
-      print([file_ID,scores])
+      #print([file_ID,scores])
    return res
    
 
@@ -121,7 +121,7 @@ def pose2score(pose):
                naturality = sine(lye_line,nos_line)
             else:
                naturality = sine(rye_line,nos_line)
-            score = naturality if naturality < 0.3 else 1 
+            score = naturality if naturality < 0.5 else 1 
       else:
          score = 1
    else:
