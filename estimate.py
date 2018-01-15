@@ -79,7 +79,7 @@ def jsons2result(json_paths):
          else:
             all_score = 0
       file_ID = re.sub( r'_keypoints.json', "", json_path.split("/")[-1])
-      res[file_ID]=round(all_score*80+20*valid)
+      res[file_ID]=int(round(all_score*80+20*valid))
       #print([file_ID,scores])
    return res
    
@@ -97,13 +97,16 @@ def pose2score(pose):
    rar = pose[16*3:17*3]
    lar = pose[17*3:18*3]
 
+   ler = pose[2*3:3*3]
+   rer = pose[5*3:6*3]
+
+   nec2 = (ler+rer)/2         
+   
    lye_line = lye[:2]-nos[:2]
    rye_line = rye[:2]-nos[:2]
    lar_line = lar[:2]-lye[:2]
    rar_line = rar[:2]-rye[:2]
    nos_line = nos[:2]-nec[:2]
-   
-            
             
    probs = [x[2] for x in  [rye,lye,rar,lar]]
    eye_probs = [x[2] for x in  [rye,lye]]
@@ -121,7 +124,7 @@ def pose2score(pose):
                naturality = sine(lye_line,nos_line)
             else:
                naturality = sine(rye_line,nos_line)
-            score = naturality if naturality < 0.5 else 1 
+            score = naturality if naturality < 0.3 else 1 #0.3-0.5 
       else:
          score = 1
    else:

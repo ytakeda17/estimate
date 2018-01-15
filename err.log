@@ -1,0 +1,6 @@
+WARNING:tornado.access:405 GET /debug (163.221.170.71) 0.88ms
+WARNING:tornado.access:404 GET / (163.221.170.71) 0.96ms
+WARNING:tornado.access:404 GET /favicon.ico (163.221.170.71) 0.67ms
+WARNING:tornado.access:405 GET /debug (163.221.170.71) 0.88ms
+WARNING:tornado.access:404 GET / (127.0.0.1) 0.88ms
+WARNING:tornado.access:404 GET / (163.221.170.71) 0.63ms
